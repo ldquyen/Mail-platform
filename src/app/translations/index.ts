@@ -24,9 +24,9 @@ export const translations = {
 
     // Header
     header: {
-      title: 'Email Custom Platform',
+      title: 'Bami Mail',
       subtitle: 'Tạo và gửi email template chuyên nghiệp',
-      pageTitle: 'Email Custom Platform',
+      pageTitle: 'Bami Mail',
       pageDescription: 'Nền tảng tạo và gửi email template chuyên nghiệp',
     },
 
@@ -184,9 +184,9 @@ export const translations = {
 
     // Header
     header: {
-      title: 'Email Custom Platform',
+      title: 'Bami Mail',
       subtitle: 'Create and send professional email templates',
-      pageTitle: 'Email Custom Platform',
+      pageTitle: 'Bami Mail',
       pageDescription: 'Professional email template creation and sending platform',
     },
 

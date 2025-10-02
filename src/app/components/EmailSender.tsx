@@ -168,7 +168,7 @@ export default function EmailSender() {
     let config;
     try {
       config = JSON.parse(emailConfig);
-    } catch (error) {
+    } catch {
       showError(t.emailSender.invalidConfig);
       return;
     }

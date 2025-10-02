@@ -1,4 +1,4 @@
-# 📧 Email Custom Platform
+# 📧 Bami Mail
 
 A professional email template builder and sender platform built with Next.js and HeroUI. Create custom HTML email templates with dynamic parameters and send them to multiple recipients easily.
 

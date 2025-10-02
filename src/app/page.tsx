@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardBody, Button, Switch, Select, SelectItem, addToast } from '@heroui/react';
+import { Card, CardBody, Switch, Select, SelectItem } from '@heroui/react';
 import EmailFormBuilder from './components/EmailFormBuilder';
 import EmailSender from './components/EmailSender';
 import EmailConfig from './components/EmailConfig';

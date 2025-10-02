@@ -7,10 +7,7 @@ import {
   CardHeader, 
   Input, 
   Button, 
-  Switch,
-  Divider,
-  Select,
-  SelectItem
+  Divider
 } from '@heroui/react';
 import { useApp } from '../contexts/AppContext';
 import { useTranslation } from '../hooks/useTranslation';
@@ -44,7 +41,7 @@ const defaultConfig: EmailConfig = {
 export default function EmailConfig() {
   const { theme } = useApp();
   const t = useTranslation();
-  const { showSuccess, showWarning } = useToast();
+  const { showSuccess } = useToast();
   const [config, setConfig] = useState<EmailConfig>(defaultConfig);
 
   // Load config from localStorage
@@ -62,55 +59,55 @@ export default function EmailConfig() {
   };
 
   // Export config to file
-  const exportConfig = () => {
-    const configData = {
-      ...config,
-      exportedAt: new Date().toISOString(),
-      version: '1.0'
-    };
+  // const exportConfig = () => {
+  //   const configData = {
+  //     ...config,
+  //     exportedAt: new Date().toISOString(),
+  //     version: '1.0'
+  //   };
     
-    const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `email-config-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  //   const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
+  //   const url = URL.createObjectURL(blob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = `email-config-${new Date().toISOString().split('T')[0]}.json`;
+  //   document.body.appendChild(a);
+  //   a.click();
+  //   document.body.removeChild(a);
+  //   URL.revokeObjectURL(url);
     
-    showSuccess('Cấu hình email đã được xuất thành file!');
-  };
+  //   showSuccess('Cấu hình email đã được xuất thành file!');
+  // };
 
   // Import config from file
-  const importConfig = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const importedConfig = JSON.parse(e.target?.result as string);
-            // Validate imported config
-            if (importedConfig.host && importedConfig.port && importedConfig.auth) {
-              setConfig(importedConfig);
-              localStorage.setItem('emailConfig', JSON.stringify(importedConfig));
-              showSuccess('Cấu hình email đã được nhập thành công!');
-            } else {
-              showWarning('File cấu hình không hợp lệ!');
-            }
-          } catch (error) {
-            showWarning('Không thể đọc file cấu hình!');
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    input.click();
-  };
+  // const importConfig = () => {
+  //   const input = document.createElement('input');
+  //   input.type = 'file';
+  //   input.accept = '.json';
+  //   input.onchange = (e) => {
+  //     const file = (e.target as HTMLInputElement).files?.[0];
+  //     if (file) {
+  //       const reader = new FileReader();
+  //       reader.onload = (e) => {
+  //         try {
+  //           const importedConfig = JSON.parse(e.target?.result as string);
+  //           // Validate imported config
+  //           if (importedConfig.host && importedConfig.port && importedConfig.auth) {
+  //             setConfig(importedConfig);
+  //             localStorage.setItem('emailConfig', JSON.stringify(importedConfig));
+  //             showSuccess('Cấu hình email đã được nhập thành công!');
+  //           } else {
+  //             showWarning('File cấu hình không hợp lệ!');
+  //           }
+  //         } catch (error) {
+  //           showWarning('Không thể đọc file cấu hình!');
+  //         }
+  //       };
+  //       reader.readAsText(file);
+  //     }
+  //   };
+  //   input.click();
+  // };
 
 
   // Clear email configuration

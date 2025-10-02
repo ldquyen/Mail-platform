@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
           statusCode = 503;
           break;
         default:
-          errorMessage = `Lỗi SMTP (${errorCode}): ${error.message || 'Unknown error'}`;
+          errorMessage = `Lỗi SMTP (${errorCode}): ${(error as { message?: string }).message || 'Unknown error'}`;
       }
     } else if (error instanceof Error) {
       if (error.message.includes('connection closed')) {

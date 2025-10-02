@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Email Custom Platform",
-  description: "Custom email form builder and sender platform",
+  title: "Bami Mail",
+  description: "Professional email template builder and sender platform",
 };
 
 export default function RootLayout({

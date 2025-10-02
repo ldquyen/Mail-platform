@@ -112,7 +112,7 @@ export default function EmailFormBuilder() {
       setParameters([]);
       setParameterValues({});
     }
-  }, [htmlCode]);
+  }, [htmlCode, parameterValues]);
 
   // Load saved templates from localStorage
   useEffect(() => {
