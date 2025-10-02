@@ -14,6 +14,8 @@ import {
   Select,
   SelectItem
 } from '@heroui/react';
+import { useApp } from '../contexts/AppContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface EmailConfig {
   host: string;
@@ -47,6 +49,8 @@ const commonProviders = [
 ];
 
 export default function EmailConfig() {
+  const { theme } = useApp();
+  const t = useTranslation();
   const [config, setConfig] = useState<EmailConfig>(defaultConfig);
   const [selectedProvider, setSelectedProvider] = useState('gmail');
   const [isTestMode, setIsTestMode] = useState(true);
@@ -63,7 +67,7 @@ export default function EmailConfig() {
   // Save config to localStorage
   const saveConfig = () => {
     localStorage.setItem('emailConfig', JSON.stringify(config));
-    alert('Cấu hình email đã được lưu thành công!');
+    alert(t.emailConfig.configSaved);
   };
 
   // Handle provider selection
@@ -85,11 +89,11 @@ export default function EmailConfig() {
   // Test email configuration
   const testEmailConfig = async () => {
     if (!config.auth.user || !config.auth.pass || !config.from) {
-      alert('Vui lòng điền đầy đủ thông tin cấu hình email');
+      alert(t.emailConfig.fillAllFields);
       return;
     }
 
-    setTestResult('Đang kiểm tra cấu hình...');
+    setTestResult(t.emailConfig.testingConfig);
     
     try {
       const response = await fetch('/api/test-email', {
@@ -111,7 +115,7 @@ export default function EmailConfig() {
         setTestResult(`❌ ${result.error}`);
       }
     } catch (error) {
-      setTestResult(`❌ Lỗi kết nối: ${error}`);
+      setTestResult(`❌ ${t.emailConfig.connectionError}: ${error}`);
     }
   };
 
@@ -122,7 +126,7 @@ export default function EmailConfig() {
       setConfig(prev => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof EmailConfig],
+          ...(prev[parent as keyof EmailConfig] as any),
           [child]: value
         }
       }));
@@ -137,21 +141,40 @@ export default function EmailConfig() {
   return (
     <div className="p-6 space-y-6">
       {/* Email Provider Selection */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Cấu hình Email Provider</h3>
+      <Card className={`shadow-lg border-0 transition-colors duration-300 ${
+        theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'
+      }`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">⚙️</span>
+            </div>
+            <div>
+              <h3 className={`text-lg font-bold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                {t.emailConfig.title}
+              </h3>
+              <p className={`text-xs transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                {t.emailConfig.smtpSubtitle}
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardBody>
           <div className="space-y-4">
             <Select
-              label="Chọn Email Provider"
-              placeholder="Chọn nhà cung cấp email"
+              label={t.emailConfig.selectProvider}
+              placeholder={t.emailConfig.selectProviderPlaceholder}
               selectedKeys={[selectedProvider]}
               onSelectionChange={(keys) => handleProviderChange(Array.from(keys)[0] as string)}
               variant="bordered"
+              size="lg"
             >
               {commonProviders.map((provider) => (
-                <SelectItem key={provider.key} value={provider.key}>
+                <SelectItem key={provider.key}>
                   {provider.label}
                 </SelectItem>
               ))}
@@ -161,63 +184,92 @@ export default function EmailConfig() {
               <Switch
                 isSelected={isTestMode}
                 onValueChange={setIsTestMode}
+                size="sm"
               />
-              <span className="text-sm">Chế độ test (không gửi email thực)</span>
+              <span className={`text-sm transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                {t.emailConfig.testMode}
+              </span>
             </div>
           </div>
         </CardBody>
       </Card>
 
       {/* SMTP Configuration */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Cấu hình SMTP</h3>
+      <Card className={`shadow-lg border-0 transition-colors duration-300 ${
+        theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'
+      }`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">🔧</span>
+            </div>
+            <div>
+              <h3 className={`text-lg font-bold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                {t.emailConfig.smtpTitle}
+              </h3>
+              <p className={`text-xs transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                {t.emailConfig.smtpSubtitle}
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardBody>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="SMTP Host"
+              label={t.emailConfig.smtpHost}
               placeholder="smtp.gmail.com"
               value={config.host}
               onChange={(e) => updateConfig('host', e.target.value)}
               variant="bordered"
+              size="lg"
             />
             <Input
-              label="Port"
+              label={t.emailConfig.port}
               type="number"
               placeholder="587"
               value={config.port.toString()}
               onChange={(e) => updateConfig('port', parseInt(e.target.value) || 587)}
               variant="bordered"
+              size="lg"
             />
             <Input
-              label="Username/Email"
+              label={t.emailConfig.username}
               placeholder="your-email@gmail.com"
               value={config.auth.user}
               onChange={(e) => updateConfig('auth.user', e.target.value)}
               variant="bordered"
+              size="lg"
             />
             <Input
-              label="Password/App Password"
+              label={t.emailConfig.password}
               type="password"
               placeholder="Your password or app password"
               value={config.auth.pass}
               onChange={(e) => updateConfig('auth.pass', e.target.value)}
               variant="bordered"
+              size="lg"
             />
             <Input
-              label="From Email"
+              label={t.emailConfig.fromEmail}
               placeholder="sender@example.com"
               value={config.from}
               onChange={(e) => updateConfig('from', e.target.value)}
               variant="bordered"
+              size="lg"
             />
             <Input
-              label="Reply-To Email (Optional)"
+              label={t.emailConfig.replyToEmail}
               placeholder="reply@example.com"
               value={config.replyTo || ''}
               onChange={(e) => updateConfig('replyTo', e.target.value)}
               variant="bordered"
+              size="lg"
             />
           </div>
 
@@ -228,63 +280,113 @@ export default function EmailConfig() {
               onClick={saveConfig}
               color="primary"
               variant="solid"
+              size="lg"
+              className="px-6"
             >
-              Lưu Cấu hình
+              {t.emailConfig.saveConfig}
             </Button>
             <Button
               onClick={testEmailConfig}
               color="secondary"
               variant="solid"
+              size="lg"
+              className="px-6"
             >
-              Test Cấu hình
+              {t.emailConfig.testConfig}
             </Button>
           </div>
 
           {testResult && (
-            <div className="mt-4 p-3 bg-gray-100 rounded-lg">
-              <p className="text-sm">{testResult}</p>
+            <div className={`mt-4 p-3 rounded-lg transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'
+            }`}>
+              <p className={`text-sm transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+              }`}>
+                {testResult}
+              </p>
             </div>
           )}
         </CardBody>
       </Card>
 
       {/* Instructions */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-lg font-semibold">Hướng dẫn cấu hình</h3>
+      <Card className={`shadow-lg border-0 transition-colors duration-300 ${
+        theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'
+      }`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">📚</span>
+            </div>
+            <div>
+              <h3 className={`text-lg font-bold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                {t.emailConfig.instructionsTitle}
+              </h3>
+              <p className={`text-xs transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                {t.emailConfig.instructionsSubtitle}
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardBody>
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium mb-2">Gmail:</h4>
-              <ul className="text-sm text-gray-600 space-y-1 ml-4">
-                <li>• Bật 2-Factor Authentication</li>
-                <li>• Tạo App Password: Google Account → Security → App passwords</li>
-                <li>• Sử dụng App Password thay vì mật khẩu thường</li>
+              <h4 className={`font-medium mb-2 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+              }`}>
+                {t.emailConfig.gmail.title}
+              </h4>
+              <ul className={`text-sm space-y-1 ml-4 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                <li>{t.emailConfig.gmail.step1}</li>
+                <li>{t.emailConfig.gmail.step2}</li>
+                <li>{t.emailConfig.gmail.step3}</li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-medium mb-2">Outlook/Hotmail:</h4>
-              <ul className="text-sm text-gray-600 space-y-1 ml-4">
-                <li>• Bật 2-Factor Authentication</li>
-                <li>• Tạo App Password trong Microsoft Account</li>
-                <li>• Sử dụng App Password để đăng nhập</li>
+              <h4 className={`font-medium mb-2 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+              }`}>
+                {t.emailConfig.outlook.title}
+              </h4>
+              <ul className={`text-sm space-y-1 ml-4 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                <li>{t.emailConfig.outlook.step1}</li>
+                <li>{t.emailConfig.outlook.step2}</li>
+                <li>{t.emailConfig.outlook.step3}</li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-medium mb-2">Yahoo:</h4>
-              <ul className="text-sm text-gray-600 space-y-1 ml-4">
-                <li>• Bật 2-Factor Authentication</li>
-                <li>• Tạo App Password trong Yahoo Account Security</li>
-                <li>• Sử dụng App Password thay vì mật khẩu thường</li>
+              <h4 className={`font-medium mb-2 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+              }`}>
+                {t.emailConfig.yahoo.title}
+              </h4>
+              <ul className={`text-sm space-y-1 ml-4 transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                <li>{t.emailConfig.yahoo.step1}</li>
+                <li>{t.emailConfig.yahoo.step2}</li>
+                <li>{t.emailConfig.yahoo.step3}</li>
               </ul>
             </div>
 
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
-                <strong>Lưu ý:</strong> Để bảo mật, cấu hình email chỉ được lưu trong trình duyệt hiện tại và không được gửi lên server.
+            <div className={`mt-4 p-3 rounded-lg transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-yellow-900/30 border border-yellow-700' : 'bg-yellow-50 border border-yellow-200'
+            }`}>
+              <p className={`text-sm transition-colors duration-300 ${
+                theme === 'dark' ? 'text-yellow-200' : 'text-yellow-800'
+              }`}>
+                <strong>{t.common.warning}:</strong> {t.emailConfig.securityNote}
               </p>
             </div>
           </div>

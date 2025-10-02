@@ -18,6 +18,8 @@ import {
   Spinner,
   Divider
 } from '@heroui/react';
+import { useApp } from '../contexts/AppContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface EmailTemplate {
   id: string;
@@ -38,6 +40,8 @@ interface EmailParameter {
 }
 
 export default function EmailSender() {
+  const { theme } = useApp();
+  const t = useTranslation();
   const [emailInput, setEmailInput] = useState('');
   const [emailList, setEmailList] = useState<EmailItem[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
@@ -115,27 +119,27 @@ export default function EmailSender() {
   // Send emails
   const sendEmails = async () => {
     if (!selectedTemplate) {
-      alert('Vui lòng chọn template');
+      alert(t.emailSender.selectTemplate);
       return;
     }
 
     const validEmails = emailList.filter(email => email.isValid);
     if (validEmails.length === 0) {
-      alert('Không có email hợp lệ nào để gửi');
+      alert(t.emailSender.noValidEmails);
       return;
     }
 
     // Check if all parameters are filled
     const emptyParams = parameters.filter(param => !param.value.trim());
     if (emptyParams.length > 0) {
-      alert(`Vui lòng điền đầy đủ tham số: ${emptyParams.map(p => p.name).join(', ')}`);
+      alert(`${t.emailSender.fillParameters}: ${emptyParams.map(p => p.name).join(', ')}`);
       return;
     }
 
     // Check if email config exists
     const emailConfig = localStorage.getItem('emailConfig');
     if (!emailConfig) {
-      alert('Vui lòng cấu hình email settings trong tab Email Config trước');
+      alert(t.emailSender.configureEmail);
       return;
     }
 
@@ -172,19 +176,19 @@ export default function EmailSender() {
       const result = await response.json();
       
       if (response.ok) {
-        alert(`Đã gửi email thành công!\n- Thành công: ${result.totalSent}\n- Lỗi: ${result.totalErrors}`);
+        alert(`${t.emailSender.emailSent}\n- ${t.emailSender.successCount}: ${result.totalSent}\n- ${t.emailSender.errorCount}: ${result.totalErrors}`);
         
         // Clear form after successful send
         setEmailList([]);
         setEmailInput('');
         setParameters(parameters.map(p => ({ ...p, value: '' })));
       } else {
-        alert(`Lỗi gửi email: ${result.error}`);
+        alert(`${t.emailSender.emailError}: ${result.error}`);
       }
       
     } catch (error) {
       console.error('Error sending emails:', error);
-      alert('Có lỗi xảy ra khi gửi email');
+      alert(t.emailSender.connectionError);
     } finally {
       setIsSending(false);
     }
@@ -195,15 +199,27 @@ export default function EmailSender() {
   return (
     <div className="p-6 space-y-6">
       {/* Step 1: Email List */}
-      <Card className="shadow-lg border-0 bg-gradient-to-r from-green-50 to-emerald-50">
+      <Card className={`shadow-lg border-0 transition-colors duration-300 ${
+        theme === 'dark' 
+          ? 'bg-gradient-to-r from-blue-900/30 to-indigo-900/30' 
+          : 'bg-gradient-to-r from-blue-50 to-indigo-50'
+      }`}>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">📧</span>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-800">1. Danh sách Email</h3>
-              <p className="text-sm text-gray-600">Nhập và quản lý danh sách email người nhận</p>
+              <h3 className={`text-xl font-bold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                {t.emailSender.step1}
+              </h3>
+              <p className={`text-sm transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                {t.emailSender.step1Subtitle}
+              </p>
             </div>
           </div>
         </CardHeader>
@@ -211,7 +227,7 @@ export default function EmailSender() {
           <div className="space-y-4">
             <div className="flex gap-3">
               <Textarea
-                placeholder="Nhập danh sách email (cách nhau bởi dấu phẩy, khoảng trắng hoặc xuống dòng)..."
+                placeholder={t.emailSender.emailPlaceholder}
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 className="flex-1"
@@ -231,29 +247,33 @@ export default function EmailSender() {
                 className="self-start px-6 font-semibold"
                 startContent={<span>🔍</span>}
               >
-                Parse Emails
+                {t.emailSender.parseEmails}
               </Button>
             </div>
 
             {/* Email List Table */}
-            {emailList.length > 0 && (
+            {emailList.length > 0 && ( 
               <div className="mt-6">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-lg">📋</span>
-                  <h4 className="text-lg font-semibold text-gray-800">Danh sách Email</h4>
+                  <h4 className={`text-lg font-semibold transition-colors duration-300 ${
+                    theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                  }`}>
+                    {t.emailSender.emailList}
+                  </h4>
                   <Chip color="success" variant="flat" size="sm">
-                    {validEmailCount} hợp lệ
+                    {validEmailCount} {t.emailSender.validEmails}
                   </Chip>
                   <Chip color="danger" variant="flat" size="sm">
-                    {emailList.length - validEmailCount} không hợp lệ
+                    {emailList.length - validEmailCount} {t.emailSender.invalidEmails}
                   </Chip>
                 </div>
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                   <Table aria-label="Email list" removeWrapper>
                     <TableHeader>
-                      <TableColumn className="bg-gray-50 font-semibold">EMAIL</TableColumn>
-                      <TableColumn className="bg-gray-50 font-semibold">TRẠNG THÁI</TableColumn>
-                      <TableColumn className="bg-gray-50 font-semibold">THAO TÁC</TableColumn>
+                      <TableColumn className="bg-gray-50 font-semibold">{t.emailSender.email}</TableColumn>
+                      <TableColumn className="bg-gray-50 font-semibold">{t.emailSender.status}</TableColumn>
+                      <TableColumn className="bg-gray-50 font-semibold">{t.emailSender.actions}</TableColumn>
                     </TableHeader>
                     <TableBody>
                       {emailList.map(email => (
@@ -266,7 +286,7 @@ export default function EmailSender() {
                               size="sm"
                               className="font-semibold"
                             >
-                              {email.isValid ? '✅ Hợp lệ' : '❌ Không hợp lệ'}
+                              {email.isValid ? t.emailSender.valid : t.emailSender.invalid}
                             </Chip>
                           </TableCell>
                           <TableCell>
@@ -278,7 +298,7 @@ export default function EmailSender() {
                               className="hover:bg-red-100"
                               startContent={<span>🗑️</span>}
                             >
-                              Xóa
+                              {t.emailSender.remove}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -293,25 +313,41 @@ export default function EmailSender() {
       </Card>
 
       {/* Step 2: Template Selection */}
-      <Card className="shadow-lg border-0 bg-gradient-to-r from-purple-50 to-pink-50">
+      <Card className={`shadow-lg border-0 transition-colors duration-300 ${
+        theme === 'dark' 
+          ? 'bg-gradient-to-r from-orange-900/30 to-red-900/30' 
+          : 'bg-gradient-to-r from-orange-50 to-red-50'
+      }`}>
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">📄</span>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-800">2. Chọn Template</h3>
-              <p className="text-sm text-gray-600">Chọn template email để gửi</p>
+              <h3 className={`text-xl font-bold transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+              }`}>
+                {t.emailSender.step2}
+              </h3>
+              <p className={`text-sm transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                {t.emailSender.step2Subtitle}
+              </p>
             </div>
           </div>
         </CardHeader>
         <CardBody>
           {savedTemplates.length === 0 ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 transition-colors duration-300 ${
+                theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
+              }`}>
                 <span className="text-2xl">📝</span>
               </div>
-              <p className="text-gray-500 italic">Chưa có template nào. Vui lòng tạo template trong tab Email Builder.</p>
+              <p className={`italic transition-colors duration-300 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-500'
+              }`}>{t.emailSender.noTemplates}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -332,9 +368,13 @@ export default function EmailSender() {
                           <span className="text-white font-bold text-sm">📧</span>
                         </div>
                         <div className="flex-1">
-                          <h4 className="font-semibold text-gray-800">{template.name}</h4>
-                          <p className="text-xs text-gray-500">
-                            {template.parameters.length} tham số
+                          <h4 className={`font-semibold transition-colors duration-300 ${
+                            theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+                          }`}>{template.name}</h4>
+                          <p className={`text-xs transition-colors duration-300 ${
+                            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                          }`}>
+                            {template.parameters.length} {t.emailSender.parametersCount}
                           </p>
                         </div>
                       </div>
@@ -363,8 +403,12 @@ export default function EmailSender() {
                 <span className="text-white font-bold text-lg">⚙️</span>
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-800">3. Nhập Tham số</h3>
-                <p className="text-sm text-gray-600">Điền giá trị cho các tham số trong template</p>
+                <h3 className={`text-xl font-bold transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+                }`}>{t.emailSender.enterParameters}</h3>
+                <p className={`text-sm transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                }`}>{t.emailSender.enterParametersSubtitle}</p>
               </div>
             </div>
           </CardHeader>
@@ -374,7 +418,7 @@ export default function EmailSender() {
                 <Input
                   key={param.name}
                   label={param.name}
-                  placeholder={`Nhập giá trị cho ${param.name}`}
+                  placeholder={`${t.emailSender.enterValueFor} ${param.name}`}
                   value={param.value}
                   onChange={(e) => updateParameter(index, e.target.value)}
                   variant="bordered"
@@ -400,7 +444,7 @@ export default function EmailSender() {
           className="min-w-48 h-14 text-lg font-bold bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-gray-400 disabled:to-gray-500"
           startContent={isSending ? <Spinner size="sm" color="white" /> : <span>🚀</span>}
         >
-          {isSending ? 'Đang gửi...' : `Gửi Email (${validEmailCount})`}
+          {isSending ? t.emailSender.sending : `${t.emailSender.sendEmail} (${validEmailCount})`}
         </Button>
       </div>
     </div>

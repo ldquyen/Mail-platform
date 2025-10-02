@@ -18,6 +18,8 @@ import {
   Divider,
   Spacer
 } from '@heroui/react';
+import { useApp } from '../contexts/AppContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface EmailTemplate {
   id: string;
@@ -28,6 +30,8 @@ interface EmailTemplate {
 
 export default function EmailFormBuilder() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const { theme } = useApp();
+  const t = useTranslation();
   const [htmlCode, setHtmlCode] = useState(`<!DOCTYPE html>
 <html>
 <head>
@@ -121,7 +125,7 @@ export default function EmailFormBuilder() {
 
   const saveTemplate = () => {
     if (!templateName.trim()) {
-      alert('Vui lòng nhập tên template');
+      alert(t.common.error + ': ' + t.emailBuilder.templateName);
       return;
     }
 
@@ -136,7 +140,7 @@ export default function EmailFormBuilder() {
     setSavedTemplates(updatedTemplates);
     localStorage.setItem('emailTemplates', JSON.stringify(updatedTemplates));
     
-    alert('Template đã được lưu thành công!');
+    alert(t.common.success + ': ' + t.emailBuilder.saveTemplate);
     setTemplateName('');
   };
 
@@ -166,18 +170,30 @@ export default function EmailFormBuilder() {
   return (
     <div className="h-full">
       {/* Template Management - Compact Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 p-4">
+      <div className={`border-b transition-colors duration-300 p-4 ${
+        theme === 'dark' 
+          ? 'bg-gradient-to-r from-gray-800 to-blue-800 border-gray-700' 
+          : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-gray-200'
+      }`}>
         <div className="flex items-center gap-4">
           <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">📧</span>
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-gray-800">Template Management</h3>
-            <p className="text-xs text-gray-600">Tạo và quản lý các template email của bạn</p>
+            <h3 className={`text-lg font-bold transition-colors duration-300 ${
+              theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+            }`}>
+              {t.emailBuilder.title}
+            </h3>
+            <p className={`text-xs transition-colors duration-300 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+            }`}>
+              {t.emailBuilder.subtitle}
+            </p>
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Tên template..."
+              placeholder={t.emailBuilder.templateName}
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               className="w-48"
@@ -193,7 +209,7 @@ export default function EmailFormBuilder() {
               className="px-4"
               startContent={<span>💾</span>}
             >
-              Lưu
+              {t.common.save}
             </Button>
           </div>
         </div>
@@ -201,10 +217,18 @@ export default function EmailFormBuilder() {
         {/* Saved Templates - Compact */}
         {savedTemplates.length > 0 && (
           <div className="mt-3 flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Templates:</span>
+            <span className={`text-sm font-medium transition-colors duration-300 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {t.emailBuilder.templates}:
+            </span>
             <div className="flex flex-wrap gap-2">
               {savedTemplates.map(template => (
-                <div key={template.id} className="flex items-center gap-1 bg-white/80 rounded-lg px-2 py-1 border">
+                <div key={template.id} className={`flex items-center gap-1 rounded-lg px-2 py-1 border transition-colors duration-300 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700/80 border-gray-600' 
+                    : 'bg-white/80 border-gray-300'
+                }`}>
                   <button
                     onClick={() => loadTemplate(template)}
                     className="text-xs font-medium text-blue-600 hover:text-blue-800"
@@ -227,15 +251,29 @@ export default function EmailFormBuilder() {
       {/* Main Editor Layout - 2 Columns */}
       <div className="flex h-[calc(100vh-200px)]">
         {/* Left Column - HTML Editor */}
-        <div className="flex-1 border-r border-gray-200">
+        <div className={`flex-1 border-r transition-colors duration-300 ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        }`}>
           <div className="h-full flex flex-col">
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200 p-3">
+            <div className={`border-b transition-colors duration-300 p-3 ${
+              theme === 'dark' 
+                ? 'bg-gradient-to-r from-gray-800 to-blue-800 border-gray-700' 
+                : 'bg-gradient-to-r from-gray-50 to-blue-50 border-gray-200'
+            }`}>
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-teal-500 rounded flex items-center justify-center">
                   <span className="text-white font-bold text-xs">💻</span>
                 </div>
-                <h3 className="text-sm font-bold text-gray-800">HTML Code Editor</h3>
-                <p className="text-xs text-gray-600">Chỉnh sửa mã HTML của template</p>
+                <h3 className={`text-sm font-bold transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+                }`}>
+                  {t.emailBuilder.htmlEditor}
+                </h3>
+                <p className={`text-xs transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  {t.emailBuilder.htmlEditorSubtitle}
+                </p>
               </div>
             </div>
             
@@ -250,7 +288,7 @@ export default function EmailFormBuilder() {
                   fontSize: 14,
                   wordWrap: 'on',
                   automaticLayout: true,
-                  theme: 'vs-light',
+                  theme: theme === 'dark' ? 'vs-dark' : 'vs-light',
                   lineNumbers: 'on',
                   folding: true,
                   renderLineHighlight: 'gutter',
@@ -260,12 +298,20 @@ export default function EmailFormBuilder() {
             
             {/* Parameters Display - Bottom */}
             {parameters.length > 0 && (
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-t border-purple-200 p-3">
+              <div className={`border-t transition-colors duration-300 p-3 ${
+                theme === 'dark' 
+                  ? 'bg-gradient-to-r from-purple-900 to-pink-900 border-purple-700' 
+                  : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
+              }`}>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-sm">🔧</span>
-                  <h4 className="text-sm font-semibold text-gray-800">Tham số được phát hiện</h4>
+                  <h4 className={`text-sm font-semibold transition-colors duration-300 ${
+                    theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+                  }`}>
+                    {t.emailBuilder.parametersDetected}
+                  </h4>
                   <Chip color="secondary" variant="flat" size="sm">
-                    {parameters.length} tham số
+                    {parameters.length} {t.emailBuilder.parameters}
                   </Chip>
                 </div>
                 <div className="flex flex-wrap gap-1">
@@ -283,17 +329,31 @@ export default function EmailFormBuilder() {
         {/* Right Column - Live Preview */}
         <div className="flex-1">
           <div className="h-full flex flex-col">
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 border-b border-gray-200 p-3">
+            <div className={`border-b transition-colors duration-300 p-3 ${
+              theme === 'dark' 
+                ? 'bg-gradient-to-r from-orange-900 to-red-900 border-gray-700' 
+                : 'bg-gradient-to-r from-orange-50 to-red-50 border-gray-200'
+            }`}>
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-red-500 rounded flex items-center justify-center">
                   <span className="text-white font-bold text-xs">👁️</span>
                 </div>
-                <h3 className="text-sm font-bold text-gray-800">Live Preview</h3>
-                <p className="text-xs text-gray-600">Xem trước template với dữ liệu mẫu</p>
+                <h3 className={`text-sm font-bold transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+                }`}>
+                  {t.emailBuilder.livePreview}
+                </h3>
+                <p className={`text-xs transition-colors duration-300 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                }`}>
+                  {t.emailBuilder.livePreviewSubtitle}
+                </p>
               </div>
             </div>
             
-            <div className="flex-1 bg-white">
+            <div className={`flex-1 transition-colors duration-300 ${
+              theme === 'dark' ? 'bg-gray-900' : 'bg-white'
+            }`}>
               <iframe
                 srcDoc={getPreviewHtml()}
                 className="w-full h-full border-0"
