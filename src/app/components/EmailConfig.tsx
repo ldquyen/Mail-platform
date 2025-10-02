@@ -9,13 +9,12 @@ import {
   Button, 
   Switch,
   Divider,
-  Chip,
-  Textarea,
   Select,
   SelectItem
 } from '@heroui/react';
 import { useApp } from '../contexts/AppContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { useToast } from '../hooks/useToast';
 
 interface EmailConfig {
   host: string;
@@ -41,20 +40,12 @@ const defaultConfig: EmailConfig = {
   replyTo: ''
 };
 
-const commonProviders = [
-  { key: 'gmail', label: 'Gmail', host: 'smtp.gmail.com', port: 587, secure: false },
-  { key: 'outlook', label: 'Outlook/Hotmail', host: 'smtp-mail.outlook.com', port: 587, secure: false },
-  { key: 'yahoo', label: 'Yahoo', host: 'smtp.mail.yahoo.com', port: 587, secure: false },
-  { key: 'custom', label: 'Custom', host: '', port: 587, secure: false }
-];
 
 export default function EmailConfig() {
   const { theme } = useApp();
   const t = useTranslation();
+  const { showSuccess, showWarning } = useToast();
   const [config, setConfig] = useState<EmailConfig>(defaultConfig);
-  const [selectedProvider, setSelectedProvider] = useState('gmail');
-  const [isTestMode, setIsTestMode] = useState(true);
-  const [testResult, setTestResult] = useState<string>('');
 
   // Load config from localStorage
   useEffect(() => {
@@ -67,134 +58,98 @@ export default function EmailConfig() {
   // Save config to localStorage
   const saveConfig = () => {
     localStorage.setItem('emailConfig', JSON.stringify(config));
-    alert(t.emailConfig.configSaved);
+    showSuccess(t.emailConfig.configSaved);
   };
 
-  // Handle provider selection
-  const handleProviderChange = (provider: string) => {
-    setSelectedProvider(provider);
-    if (provider !== 'custom') {
-      const providerData = commonProviders.find(p => p.key === provider);
-      if (providerData) {
-        setConfig(prev => ({
-          ...prev,
-          host: providerData.host,
-          port: providerData.port,
-          secure: providerData.secure
-        }));
-      }
-    }
-  };
-
-  // Test email configuration
-  const testEmailConfig = async () => {
-    if (!config.auth.user || !config.auth.pass || !config.from) {
-      alert(t.emailConfig.fillAllFields);
-      return;
-    }
-
-    setTestResult(t.emailConfig.testingConfig);
+  // Export config to file
+  const exportConfig = () => {
+    const configData = {
+      ...config,
+      exportedAt: new Date().toISOString(),
+      version: '1.0'
+    };
     
-    try {
-      const response = await fetch('/api/test-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          config,
-          testMode: isTestMode
-        }),
-      });
+    const blob = new Blob([JSON.stringify(configData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `email-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showSuccess('Cấu hình email đã được xuất thành file!');
+  };
 
-      const result = await response.json();
-      
-      if (response.ok) {
-        setTestResult(`✅ ${result.message}`);
-      } else {
-        setTestResult(`❌ ${result.error}`);
+  // Import config from file
+  const importConfig = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const importedConfig = JSON.parse(e.target?.result as string);
+            // Validate imported config
+            if (importedConfig.host && importedConfig.port && importedConfig.auth) {
+              setConfig(importedConfig);
+              localStorage.setItem('emailConfig', JSON.stringify(importedConfig));
+              showSuccess('Cấu hình email đã được nhập thành công!');
+            } else {
+              showWarning('File cấu hình không hợp lệ!');
+            }
+          } catch (error) {
+            showWarning('Không thể đọc file cấu hình!');
+          }
+        };
+        reader.readAsText(file);
       }
-    } catch (error) {
-      setTestResult(`❌ ${t.emailConfig.connectionError}: ${error}`);
-    }
+    };
+    input.click();
+  };
+
+
+  // Clear email configuration
+  const clearConfig = () => {
+    setConfig(defaultConfig);
+    localStorage.removeItem('emailConfig');
+    showSuccess('Email configuration cleared!');
   };
 
   // Update config field
-  const updateConfig = (field: string, value: any) => {
+  const updateConfig = (field: string, value: string | number | boolean) => {
     if (field.includes('.')) {
       const [parent, child] = field.split('.');
       setConfig(prev => ({
         ...prev,
         [parent]: {
-          ...(prev[parent as keyof EmailConfig] as any),
+          ...(prev[parent as keyof EmailConfig] as Record<string, unknown>),
           [child]: value
         }
       }));
     } else {
-      setConfig(prev => ({
-        ...prev,
-        [field]: value
-      }));
+      setConfig(prev => {
+        const newConfig = {
+          ...prev,
+          [field]: value
+        };
+        
+        // Auto-set secure flag based on port
+        if (field === 'port') {
+          newConfig.secure = value === 465; // Port 465 = secure: true, Port 587 = secure: false
+        }
+        
+        return newConfig;
+      });
     }
   };
 
   return (
     <div className="p-6 space-y-6">
-      {/* Email Provider Selection */}
-      <Card className={`shadow-lg border-0 transition-colors duration-300 ${
-        theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'
-      }`}>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">⚙️</span>
-            </div>
-            <div>
-              <h3 className={`text-lg font-bold transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
-              }`}>
-                {t.emailConfig.title}
-              </h3>
-              <p className={`text-xs transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                {t.emailConfig.smtpSubtitle}
-              </p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardBody>
-          <div className="space-y-4">
-            <Select
-              label={t.emailConfig.selectProvider}
-              placeholder={t.emailConfig.selectProviderPlaceholder}
-              selectedKeys={[selectedProvider]}
-              onSelectionChange={(keys) => handleProviderChange(Array.from(keys)[0] as string)}
-              variant="bordered"
-              size="lg"
-            >
-              {commonProviders.map((provider) => (
-                <SelectItem key={provider.key}>
-                  {provider.label}
-                </SelectItem>
-              ))}
-            </Select>
-
-            <div className="flex items-center gap-2">
-              <Switch
-                isSelected={isTestMode}
-                onValueChange={setIsTestMode}
-                size="sm"
-              />
-              <span className={`text-sm transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                {t.emailConfig.testMode}
-              </span>
-            </div>
-          </div>
-        </CardBody>
-      </Card>
 
       {/* SMTP Configuration */}
       <Card className={`shadow-lg border-0 transition-colors duration-300 ${
@@ -220,58 +175,96 @@ export default function EmailConfig() {
           </div>
         </CardHeader>
         <CardBody>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label={t.emailConfig.smtpHost}
-              placeholder="smtp.gmail.com"
+              placeholder={t.emailConfig.smtpHostPlaceholder}
               value={config.host}
               onChange={(e) => updateConfig('host', e.target.value)}
               variant="bordered"
               size="lg"
+              classNames={{
+                input: theme === 'dark' ? "text-sm text-white" : "text-sm",
+                inputWrapper: theme === 'dark'
+                  ? "border-gray-600 hover:border-green-400 focus-within:border-green-500 bg-gray-800/50"
+                  : "border-gray-300 hover:border-green-400 focus-within:border-green-500"
+              }}
             />
             <Input
               label={t.emailConfig.port}
               type="number"
-              placeholder="587"
+              placeholder={t.emailConfig.portPlaceholder}
               value={config.port.toString()}
               onChange={(e) => updateConfig('port', parseInt(e.target.value) || 587)}
               variant="bordered"
               size="lg"
+              classNames={{
+                input: theme === 'dark' ? "text-sm text-white" : "text-sm",
+                inputWrapper: theme === 'dark'
+                  ? "border-gray-600 hover:border-green-400 focus-within:border-green-500 bg-gray-800/50"
+                  : "border-gray-300 hover:border-green-400 focus-within:border-green-500"
+              }}
             />
+            
             <Input
               label={t.emailConfig.username}
-              placeholder="your-email@gmail.com"
+              placeholder={t.emailConfig.usernamePlaceholder}
               value={config.auth.user}
               onChange={(e) => updateConfig('auth.user', e.target.value)}
               variant="bordered"
               size="lg"
+              classNames={{
+                input: theme === 'dark' ? "text-sm text-white" : "text-sm",
+                inputWrapper: theme === 'dark'
+                  ? "border-gray-600 hover:border-green-400 focus-within:border-green-500 bg-gray-800/50"
+                  : "border-gray-300 hover:border-green-400 focus-within:border-green-500"
+              }}
             />
             <Input
               label={t.emailConfig.password}
               type="password"
-              placeholder="Your password or app password"
+              placeholder={t.emailConfig.passwordPlaceholder}
               value={config.auth.pass}
               onChange={(e) => updateConfig('auth.pass', e.target.value)}
               variant="bordered"
               size="lg"
+              classNames={{
+                input: theme === 'dark' ? "text-sm text-white" : "text-sm",
+                inputWrapper: theme === 'dark'
+                  ? "border-gray-600 hover:border-green-400 focus-within:border-green-500 bg-gray-800/50"
+                  : "border-gray-300 hover:border-green-400 focus-within:border-green-500"
+              }}
             />
             <Input
               label={t.emailConfig.fromEmail}
-              placeholder="sender@example.com"
+              placeholder={t.emailConfig.fromEmailPlaceholder}
               value={config.from}
               onChange={(e) => updateConfig('from', e.target.value)}
               variant="bordered"
               size="lg"
+              classNames={{
+                input: theme === 'dark' ? "text-sm text-white" : "text-sm",
+                inputWrapper: theme === 'dark'
+                  ? "border-gray-600 hover:border-green-400 focus-within:border-green-500 bg-gray-800/50"
+                  : "border-gray-300 hover:border-green-400 focus-within:border-green-500"
+              }}
             />
             <Input
               label={t.emailConfig.replyToEmail}
-              placeholder="reply@example.com"
+              placeholder={t.emailConfig.replyToPlaceholder}
               value={config.replyTo || ''}
               onChange={(e) => updateConfig('replyTo', e.target.value)}
               variant="bordered"
               size="lg"
+              classNames={{
+                input: theme === 'dark' ? "text-sm text-white" : "text-sm",
+                inputWrapper: theme === 'dark'
+                  ? "border-gray-600 hover:border-green-400 focus-within:border-green-500 bg-gray-800/50"
+                  : "border-gray-300 hover:border-green-400 focus-within:border-green-500"
+              }}
             />
-          </div>
+            </div>
 
           <Divider className="my-4" />
 
@@ -286,27 +279,17 @@ export default function EmailConfig() {
               {t.emailConfig.saveConfig}
             </Button>
             <Button
-              onClick={testEmailConfig}
-              color="secondary"
+              onClick={clearConfig}
+              color="danger"
               variant="solid"
               size="lg"
               className="px-6"
             >
-              {t.emailConfig.testConfig}
+              {t.emailConfig.clearConfig}
             </Button>
           </div>
 
-          {testResult && (
-            <div className={`mt-4 p-3 rounded-lg transition-colors duration-300 ${
-              theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-100'
-            }`}>
-              <p className={`text-sm transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-              }`}>
-                {testResult}
-              </p>
-            </div>
-          )}
+          </div>
         </CardBody>
       </Card>
 
@@ -347,36 +330,6 @@ export default function EmailConfig() {
                 <li>{t.emailConfig.gmail.step1}</li>
                 <li>{t.emailConfig.gmail.step2}</li>
                 <li>{t.emailConfig.gmail.step3}</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className={`font-medium mb-2 transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-              }`}>
-                {t.emailConfig.outlook.title}
-              </h4>
-              <ul className={`text-sm space-y-1 ml-4 transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                <li>{t.emailConfig.outlook.step1}</li>
-                <li>{t.emailConfig.outlook.step2}</li>
-                <li>{t.emailConfig.outlook.step3}</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className={`font-medium mb-2 transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-              }`}>
-                {t.emailConfig.yahoo.title}
-              </h4>
-              <ul className={`text-sm space-y-1 ml-4 transition-colors duration-300 ${
-                theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                <li>{t.emailConfig.yahoo.step1}</li>
-                <li>{t.emailConfig.yahoo.step2}</li>
-                <li>{t.emailConfig.yahoo.step3}</li>
               </ul>
             </div>
 

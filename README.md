@@ -1,56 +1,46 @@
 # 📧 Email Custom Platform
 
-A modern, professional email template builder and sender platform built with Next.js and HeroUI. Create custom HTML email templates with dynamic parameters and send them to multiple recipients with ease.
+A professional email template builder and sender platform built with Next.js and HeroUI. Create custom HTML email templates with dynamic parameters and send them to multiple recipients easily.
 
-![Email Custom Platform](https://img.shields.io/badge/Next.js-15.5.4-black?style=for-the-badge&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-15.5.4-black?style=for-the-badge&logo=next.js)
 ![HeroUI](https://img.shields.io/badge/HeroUI-Latest-blue?style=for-the-badge)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
 
-## ✨ Features
+## ✨ Key Features
 
-### 🎨 Email Builder
-- **Visual HTML Editor**: Monaco Editor with syntax highlighting
+### 🎨 **Email Builder**
+- **HTML Editor**: Monaco Editor with syntax highlighting
 - **Live Preview**: Real-time preview with sample data
 - **Template Management**: Save, load, and delete email templates
 - **Dynamic Parameters**: Auto-detect and manage template variables
-- **Responsive Design**: Clean 2-column layout for optimal workflow
 
-### 🚀 Email Sender
-- **Bulk Email Sending**: Send emails to multiple recipients
+### 🚀 **Email Sender**
+- **Bulk Sending**: Send emails to multiple recipients
 - **Email Validation**: Automatic email format validation
-- **Template Selection**: Choose from saved templates with visual cards
+- **Template Selection**: Choose from saved templates
 - **Parameter Input**: Dynamic form for template variables
-- **Send Status**: Real-time feedback on email delivery
-- **Modern UI**: Blue and orange gradient sections for better visual distinction
+- **Auto Deduplication**: Remove duplicate emails when parsing
 
-### ⚙️ Email Configuration
+### ⚙️ **Email Configuration**
 - **SMTP Settings**: Configure email server settings
 - **Provider Presets**: Quick setup for Gmail, Outlook, Yahoo
 - **Test Mode**: Verify configuration without sending emails
-- **Security**: Local storage for credentials (client-side only)
 
-### 🌙 Theme Support
-- **Dark Mode**: Full dark mode support with proper contrast
-- **Light Mode**: Clean, modern light theme
-- **Smooth Transitions**: Seamless theme switching with animations
-- **Accessibility**: High contrast colors for better readability
+### 🌙 **Theme & Language**
+- **Dark/Light Mode**: Full dark and light mode support
+- **Bilingual**: Vietnamese and English
+- **Smooth Transitions**: Animations when switching themes/languages
 
-### 🌍 Internationalization
-- **Multi-language Support**: Vietnamese and English
-- **Dynamic Language Switching**: Change language on the fly
-- **Consistent Translations**: All UI elements properly translated
+## 🚀 Quick Setup
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ 
+### Requirements
+- Node.js 18+
 - npm or yarn
 - Email account with SMTP access
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone repository**
 ```bash
 git clone <repository-url>
 cd mailplatform
@@ -61,198 +51,99 @@ cd mailplatform
 npm install
 ```
 
-3. **Run the development server**
+3. **Run development server**
 ```bash
 npm run dev
 ```
 
-4. **Open your browser**
+4. **Open browser**
 Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 📖 Usage Guide
 
-### 1. Email Builder
+### 1. **Email Builder** - Create Templates
 
-#### Creating Templates
-1. Navigate to the **Email Builder** tab
-2. Write your HTML code in the left editor
-3. Use `{{parameterName}}` syntax for dynamic content
-4. Preview your template in real-time on the right
-5. Save your template with a descriptive name
+1. Go to **Email Builder** tab
+2. Write HTML code in the left editor
+3. Use `{{variableName}}` for dynamic content
+4. Preview real-time on the right
+5. Save template with descriptive name
 
-#### Example Template
+**Example template:**
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-    <style>
-        .container { max-width: 600px; margin: 0 auto; }
-        .otp-code { font-size: 24px; font-weight: bold; color: #2563eb; }
-    </style>
-</head>
 <body>
-    <div class="container">
+    <div style="max-width: 600px; margin: 0 auto;">
         <h1>OTP Verification</h1>
         <p>Your OTP code is:</p>
-        <div class="otp-code">{{numOTP}}</div>
+        <div style="font-size: 24px; font-weight: bold; color: #2563eb;">
+            {{numOTP}}
+        </div>
         <p>Expires at: {{expireAt}}</p>
     </div>
 </body>
 </html>
 ```
 
-### 2. Email Configuration
+### 2. **Email Config** - Configure Email
 
-#### Setting Up SMTP
 1. Go to **Email Config** tab
-2. Choose your email provider or select "Custom"
-3. Enter your SMTP credentials:
+2. Choose email provider or "Custom"
+3. Enter SMTP information:
    - **Host**: smtp.gmail.com (for Gmail)
    - **Port**: 587
    - **Username**: your-email@gmail.com
-   - **Password**: your-app-password
-4. Test your configuration
+   - **Password**: your app password
+4. Test configuration
 5. Save settings
 
-#### Provider-Specific Setup
-
-**Gmail:**
+**Gmail Setup:**
 - Enable 2-Factor Authentication
 - Generate App Password: Google Account → Security → App passwords
 - Use App Password instead of regular password
 
-**Outlook/Hotmail:**
-- Enable 2-Factor Authentication
-- Create App Password in Microsoft Account
-- Use App Password for authentication
+### 3. **Email Sender** - Send Emails
 
-**Yahoo:**
-- Enable 2-Factor Authentication
-- Create App Password in Yahoo Account Security
-- Use App Password instead of regular password
+1. Go to **Email Sender** tab
+2. **Step 1**: Enter email list (comma-separated)
+3. **Step 2**: Select saved template
+4. **Step 3**: Fill template parameter values
+5. Click **Send Email**
 
-### 3. Email Sender
+**Special Features:**
+- **Auto Deduplication**: Duplicate emails are automatically removed
+- **Use Value**: Choose which parameter uses values from email list
+- **Validation**: Invalid emails are flagged
 
-#### Sending Emails
-1. Switch to **Email Sender** tab
-2. **Step 1**: Enter recipient emails (comma-separated)
-3. **Step 2**: Select a saved template
-4. **Step 3**: Fill in template parameters
-5. Click **Send Email** to deliver
+## 🛠️ Tech Stack
 
-#### Email List Management
-- Paste multiple emails separated by commas, spaces, or new lines
-- Invalid emails are automatically flagged
-- Remove individual emails from the list
-- View validation status for each email
-
-## 🛠️ Technical Details
-
-### Tech Stack
 - **Frontend**: Next.js 15.5.4, React 19, TypeScript
-- **UI Library**: HeroUI (NextUI)
+- **UI**: HeroUI (NextUI)
 - **Styling**: Tailwind CSS 4.0
 - **Email**: Nodemailer
 - **Editor**: Monaco Editor
 - **Storage**: LocalStorage (client-side)
-- **State Management**: React Context API
-- **Internationalization**: Custom i18n implementation
-- **Theme**: Custom dark/light mode implementation
-
-### Project Structure
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── send-email/     # Email sending API
-│   │   └── test-email/     # Email testing API
-│   ├── components/
-│   │   ├── EmailFormBuilder.tsx
-│   │   ├── EmailSender.tsx
-│   │   ├── EmailConfig.tsx
-│   │   └── Providers.tsx
-│   ├── contexts/
-│   │   └── AppContext.tsx  # Global app state (theme, language)
-│   ├── hooks/
-│   │   └── useTranslation.ts # Translation hook
-│   ├── translations/
-│   │   └── index.ts        # Translation files (vi/en)
-│   ├── layout.tsx
-│   └── page.tsx
-```
-
-### API Endpoints
-
-#### POST `/api/send-email`
-Send emails to multiple recipients
-```json
-{
-  "config": {
-    "host": "smtp.gmail.com",
-    "port": 587,
-    "secure": false,
-    "auth": {
-      "user": "your-email@gmail.com",
-      "pass": "your-app-password"
-    },
-    "from": "sender@example.com"
-  },
-  "emails": ["recipient1@example.com", "recipient2@example.com"],
-  "subject": "Email Subject",
-  "htmlContent": "<html>...</html>"
-}
-```
-
-#### POST `/api/test-email`
-Test email configuration
-```json
-{
-  "config": { /* SMTP config */ },
-  "testMode": true
-}
-```
+- **State**: React Context API
+- **i18n**: Custom translation system
 
 ## 🔒 Security
 
-- **Client-side Storage**: Email credentials stored locally in browser
+- **Local Storage**: Email credentials stored only in browser
 - **No Server Storage**: Credentials never sent to server
-- **App Passwords**: Recommended for all email providers
+- **App Passwords**: Recommended for all providers
 - **HTTPS**: Use secure connections in production
-
-## 🎨 Customization
-
-### Styling
-The platform uses Tailwind CSS for styling. Key design elements:
-- **Gradient Backgrounds**: Multi-layer gradients for visual appeal
-- **Glassmorphism**: Backdrop blur effects for modern look
-- **Responsive Design**: Mobile-first approach
-- **Color Coding**: Different colors for different functions
-- **Theme-aware Colors**: Automatic color adjustments for dark/light modes
-- **Smooth Transitions**: CSS transitions for theme and state changes
-
-### UI Improvements
-- **Modern Color Scheme**: Blue and orange gradients for Email Sender sections
-- **Enhanced Contrast**: Improved text readability in dark mode
-- **Visual Hierarchy**: Clear distinction between different sections
-- **Accessibility**: High contrast ratios for better accessibility
-
-### Template Variables
-Use `{{variableName}}` syntax in your HTML templates:
-- `{{numOTP}}` - OTP code
-- `{{expireAt}}` - Expiration time
-- `{{userName}}` - User name
-- `{{companyName}}` - Company name
 
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
-1. Push your code to GitHub
-2. Connect your repository to Vercel
+1. Push code to GitHub
+2. Connect repository to Vercel
 3. Deploy with default settings
-4. Your app will be available at `https://your-app.vercel.app`
+4. App available at `https://your-app.vercel.app`
 
 ### Other Platforms
-The app can be deployed to any platform that supports Next.js:
+App can be deployed to any platform supporting Next.js:
 - Netlify
 - Railway
 - DigitalOcean App Platform
@@ -260,11 +151,11 @@ The app can be deployed to any platform that supports Next.js:
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Fork repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push branch (`git push origin feature/amazing-feature`)
+5. Create Pull Request
 
 ## 📝 License
 
@@ -272,20 +163,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-If you encounter any issues or have questions:
+If you encounter issues or have questions:
 
 1. Check the [Issues](https://github.com/your-repo/issues) page
-2. Create a new issue with detailed description
+2. Create new issue with detailed description
 3. Include error messages and steps to reproduce
-
-## 🙏 Acknowledgments
-
-- [Next.js](https://nextjs.org/) - React framework
-- [HeroUI](https://heroui.com/) - UI component library
-- [Monaco Editor](https://microsoft.github.io/monaco-editor/) - Code editor
-- [Nodemailer](https://nodemailer.com/) - Email sending library
-- [Tailwind CSS](https://tailwindcss.com/) - CSS framework
 
 ---
 
-**Made with ❤️ for professional email management**
+**Made by LDQ**

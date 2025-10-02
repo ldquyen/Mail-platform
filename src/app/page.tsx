@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardBody, Button, Switch, Select, SelectItem } from '@heroui/react';
+import { Card, CardBody, Button, Switch, Select, SelectItem, addToast } from '@heroui/react';
 import EmailFormBuilder from './components/EmailFormBuilder';
 import EmailSender from './components/EmailSender';
 import EmailConfig from './components/EmailConfig';
@@ -104,47 +104,64 @@ export default function Home() {
       } sticky top-[88px] z-10`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center">
-            <div className={`flex rounded-xl p-1 gap-1 transition-colors duration-300 ${
+            <div className={`relative flex rounded-xl p-1 gap-1 transition-colors duration-300 ${
               theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
             }`}>
+              {/* Active Tab Background Slider */}
+              <div 
+                className={`absolute top-1 bottom-1 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg transition-all duration-500 ease-out ${
+                  activeTab === 'builder' ? 'left-1 w-[calc(33.333%-0.25rem)]' :
+                  activeTab === 'sender' ? 'left-[calc(33.333%+0.25rem)] w-[calc(33.333%-0.25rem)]' :
+                  'left-[calc(66.666%+0.25rem)] w-[calc(33.333%-0.25rem)]'
+                }`}
+              />
+              
               <button
                 onClick={() => setActiveTab('builder')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                className={`relative z-10 flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${
                   activeTab === 'builder'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                    ? 'text-white'
                     : theme === 'dark' 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-600' 
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-white'
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-600/50' 
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
                 }`}
               >
-                <span className="text-lg">🎨</span>
-                <span>{t.nav.emailBuilder}</span>
+                <span className={`text-lg transition-transform duration-300 ${
+                  activeTab === 'builder' ? 'scale-110' : 'hover:scale-110'
+                }`}>🎨</span>
+                <span className="transition-all duration-300">{t.nav.emailBuilder}</span>
               </button>
+              
               <button
                 onClick={() => setActiveTab('sender')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                className={`relative z-10 flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${
                   activeTab === 'sender'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                    ? 'text-white'
                     : theme === 'dark' 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-600' 
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-white'
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-600/50' 
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
                 }`}
               >
-                <span className="text-lg">🚀</span>
-                <span>{t.nav.emailSender}</span>
+                <span className={`text-lg transition-transform duration-300 ${
+                  activeTab === 'sender' ? 'scale-110' : 'hover:scale-110'
+                }`}>🚀</span>
+                <span className="transition-all duration-300">{t.nav.emailSender}</span>
               </button>
+              
               <button
                 onClick={() => setActiveTab('config')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                className={`relative z-10 flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${
                   activeTab === 'config'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                    ? 'text-white'
                     : theme === 'dark' 
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-600' 
-                      : 'text-gray-600 hover:text-gray-800 hover:bg-white'
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-600/50' 
+                      : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'
                 }`}
               >
-                <span className="text-lg">⚙️</span>
-                <span>{t.nav.emailConfig}</span>
+                <span className={`text-lg transition-transform duration-300 ${
+                  activeTab === 'config' ? 'scale-110' : 'hover:scale-110'
+                }`}>⚙️</span>
+                <span className="transition-all duration-300">{t.nav.emailConfig}</span>
               </button>
             </div>
           </div>
@@ -153,11 +170,18 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card className={`shadow-2xl border-0 backdrop-blur-sm transition-colors duration-300 ${
+        <Card className={`shadow-2xl border-0 backdrop-blur-sm transition-all duration-500 ${
           theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'
         }`}>
           <CardBody className="p-0">
-            {renderContent()}
+            <div className="relative overflow-hidden">
+              <div 
+                key={activeTab}
+                className="animate-in slide-in-from-right-4 fade-in duration-500"
+              >
+                {renderContent()}
+              </div>
+            </div>
           </CardBody>
         </Card>
       </div>

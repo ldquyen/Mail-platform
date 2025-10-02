@@ -5,8 +5,8 @@ export async function POST(request: NextRequest) {
   try {
     const { config, testMode } = await request.json();
 
-    // Create transporter
-    const transporter = nodemailer.createTransporter({
+    // Create transporter with timeout settings
+    const transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
       secure: config.secure,
@@ -14,6 +14,9 @@ export async function POST(request: NextRequest) {
         user: config.auth.user,
         pass: config.auth.pass,
       },
+      connectionTimeout: 30000, // 30 seconds
+      greetingTimeout: 15000,    // 15 seconds
+      socketTimeout: 30000,      // 30 seconds
     });
 
     if (testMode) {
@@ -49,24 +52,54 @@ export async function POST(request: NextRequest) {
       });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Email test error:', error);
     
     let errorMessage = 'Có lỗi xảy ra khi test email configuration';
+    let statusCode = 400;
     
-    if (error.code === 'EAUTH') {
-      errorMessage = 'Lỗi xác thực: Kiểm tra lại username/password';
-    } else if (error.code === 'ECONNECTION') {
-      errorMessage = 'Lỗi kết nối: Kiểm tra lại host/port';
-    } else if (error.code === 'ETIMEDOUT') {
-      errorMessage = 'Timeout: Kiểm tra kết nối mạng';
-    } else if (error.message) {
-      errorMessage = error.message;
+    if (error && typeof error === 'object' && 'code' in error) {
+      const errorCode = error.code as string;
+      
+      switch (errorCode) {
+        case 'EAUTH':
+          errorMessage = 'Lỗi xác thực: Kiểm tra lại Username và Password';
+          statusCode = 401;
+          break;
+        case 'ECONNECTION':
+          errorMessage = 'Lỗi kết nối: Kiểm tra lại Host và Port SMTP';
+          statusCode = 503;
+          break;
+        case 'ETIMEDOUT':
+          errorMessage = 'Timeout: Kết nối quá chậm, kiểm tra mạng';
+          statusCode = 408;
+          break;
+        case 'ENOTFOUND':
+          errorMessage = 'Không tìm thấy server: Kiểm tra lại Host SMTP';
+          statusCode = 404;
+          break;
+        case 'ECONNRESET':
+          errorMessage = 'Kết nối bị đóng: Server từ chối kết nối';
+          statusCode = 503;
+          break;
+        default:
+          errorMessage = `Lỗi SMTP (${errorCode}): ${error.message || 'Unknown error'}`;
+      }
+    } else if (error instanceof Error) {
+      if (error.message.includes('connection closed')) {
+        errorMessage = 'Kết nối bị đóng: Kiểm tra lại cấu hình SMTP';
+        statusCode = 503;
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Timeout: Kết nối quá chậm';
+        statusCode = 408;
+      } else {
+        errorMessage = error.message;
+      }
     }
 
     return NextResponse.json(
       { error: errorMessage },
-      { status: 400 }
+      { status: statusCode }
     );
   }
 }

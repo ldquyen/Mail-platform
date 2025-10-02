@@ -3,23 +3,13 @@
 import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { 
-  Card, 
-  CardBody, 
-  CardHeader, 
   Input, 
   Button, 
-  Chip, 
-  Modal, 
-  ModalContent, 
-  ModalHeader, 
-  ModalBody, 
-  ModalFooter, 
-  useDisclosure,
-  Divider,
-  Spacer
+  Chip
 } from '@heroui/react';
 import { useApp } from '../contexts/AppContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { useToast } from '../hooks/useToast';
 
 interface EmailTemplate {
   id: string;
@@ -29,9 +19,9 @@ interface EmailTemplate {
 }
 
 export default function EmailFormBuilder() {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { theme } = useApp();
   const t = useTranslation();
+  const { showSuccess, showError } = useToast();
   const [htmlCode, setHtmlCode] = useState(`<!DOCTYPE html>
 <html>
 <head>
@@ -102,6 +92,7 @@ export default function EmailFormBuilder() {
   const [templateName, setTemplateName] = useState('');
   const [parameters, setParameters] = useState<string[]>([]);
   const [savedTemplates, setSavedTemplates] = useState<EmailTemplate[]>([]);
+  const [parameterValues, setParameterValues] = useState<Record<string, string>>({});
 
   // Extract parameters from HTML code
   useEffect(() => {
@@ -110,8 +101,16 @@ export default function EmailFormBuilder() {
     if (matches) {
       const extractedParams = matches.map(match => match.replace(/[{}]/g, ''));
       setParameters([...new Set(extractedParams)]);
+      
+      // Reset parameter values when parameters change
+      const newValues: Record<string, string> = {};
+      [...new Set(extractedParams)].forEach(param => {
+        newValues[param] = parameterValues[param] || '';
+      });
+      setParameterValues(newValues);
     } else {
       setParameters([]);
+      setParameterValues({});
     }
   }, [htmlCode]);
 
@@ -125,7 +124,7 @@ export default function EmailFormBuilder() {
 
   const saveTemplate = () => {
     if (!templateName.trim()) {
-      alert(t.common.error + ': ' + t.emailBuilder.templateName);
+      showError(t.common.error + ': ' + t.emailBuilder.templateName);
       return;
     }
 
@@ -140,7 +139,7 @@ export default function EmailFormBuilder() {
     setSavedTemplates(updatedTemplates);
     localStorage.setItem('emailTemplates', JSON.stringify(updatedTemplates));
     
-    alert(t.common.success + ': ' + t.emailBuilder.saveTemplate);
+    showSuccess(t.common.success + ': ' + t.emailBuilder.saveTemplate);
     setTemplateName('');
   };
 
@@ -155,14 +154,20 @@ export default function EmailFormBuilder() {
     localStorage.setItem('emailTemplates', JSON.stringify(updatedTemplates));
   };
 
-  // Replace parameters with sample data for preview
+  // Update parameter value
+  const updateParameterValue = (param: string, value: string) => {
+    setParameterValues(prev => ({
+      ...prev,
+      [param]: value
+    }));
+  };
+
+  // Replace parameters with actual values for preview
   const getPreviewHtml = () => {
     let previewHtml = htmlCode;
     parameters.forEach(param => {
-      const sampleValue = param === 'numOTP' ? '123456' : 
-                         param === 'expireAt' ? '15 phút' :
-                         `Sample ${param}`;
-      previewHtml = previewHtml.replace(new RegExp(`\\{\\{${param}\\}\\}`, 'g'), sampleValue);
+      const value = parameterValues[param] || `Sample ${param}`;
+      previewHtml = previewHtml.replace(new RegExp(`\\{\\{${param}\\}\\}`, 'g'), value);
     });
     return previewHtml;
   };
@@ -200,6 +205,12 @@ export default function EmailFormBuilder() {
               variant="bordered"
               size="sm"
               startContent={<span className="text-gray-400">📝</span>}
+              classNames={{
+                input: theme === 'dark' ? "text-sm text-white" : "text-sm",
+                inputWrapper: theme === 'dark'
+                  ? "border-gray-600 hover:border-blue-400 focus-within:border-blue-500 bg-gray-800/50"
+                  : "border-gray-300 hover:border-blue-400 focus-within:border-blue-500"
+              }}
             />
             <Button
               onClick={saveTemplate}
@@ -296,14 +307,14 @@ export default function EmailFormBuilder() {
               />
             </div>
             
-            {/* Parameters Display - Bottom */}
+            {/* Parameters Display and Input - Bottom */}
             {parameters.length > 0 && (
               <div className={`border-t transition-colors duration-300 p-3 ${
                 theme === 'dark' 
                   ? 'bg-gradient-to-r from-purple-900 to-pink-900 border-purple-700' 
                   : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
               }`}>
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm">🔧</span>
                   <h4 className={`text-sm font-semibold transition-colors duration-300 ${
                     theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
@@ -314,12 +325,42 @@ export default function EmailFormBuilder() {
                     {parameters.length} {t.emailBuilder.parameters}
                   </Chip>
                 </div>
-                <div className="flex flex-wrap gap-1">
+                
+                {/* Parameter Chips */}
+                <div className="flex flex-wrap gap-1 mb-3">
                   {parameters.map(param => (
                     <Chip key={param} color="primary" variant="flat" size="sm" className="font-mono text-xs">
                       {`{{${param}}}`}
                     </Chip>
                   ))}
+                </div>
+
+                {/* Parameter Input Fields */}
+                <div className="space-y-2">
+                  <h5 className={`text-xs font-medium transition-colors duration-300 ${
+                    theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                  }`}>
+                    {t.emailBuilder.enterParameterValues}:
+                  </h5>
+                  <div className="grid grid-cols-1 gap-2">
+                    {parameters.map(param => (
+                      <Input
+                        key={param}
+                        label={param}
+                        placeholder={`Enter value for ${param}`}
+                        value={parameterValues[param] || ''}
+                        onChange={(e) => updateParameterValue(param, e.target.value)}
+                        variant="bordered"
+                        size="sm"
+                        classNames={{
+                          input: theme === 'dark' ? "text-xs text-white" : "text-xs",
+                          inputWrapper: theme === 'dark'
+                            ? "border-gray-600 hover:border-purple-400 focus-within:border-purple-500 bg-gray-800/50"
+                            : "border-gray-300 hover:border-purple-400 focus-within:border-purple-500"
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -357,7 +398,7 @@ export default function EmailFormBuilder() {
               <iframe
                 srcDoc={getPreviewHtml()}
                 className="w-full h-full border-0"
-                title="Email Preview"
+                title={t.emailBuilder.emailPreview}
               />
             </div>
           </div>
