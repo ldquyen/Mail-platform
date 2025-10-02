@@ -19,15 +19,27 @@ A modern, professional email template builder and sender platform built with Nex
 ### 🚀 Email Sender
 - **Bulk Email Sending**: Send emails to multiple recipients
 - **Email Validation**: Automatic email format validation
-- **Template Selection**: Choose from saved templates
+- **Template Selection**: Choose from saved templates with visual cards
 - **Parameter Input**: Dynamic form for template variables
 - **Send Status**: Real-time feedback on email delivery
+- **Modern UI**: Blue and orange gradient sections for better visual distinction
 
 ### ⚙️ Email Configuration
 - **SMTP Settings**: Configure email server settings
 - **Provider Presets**: Quick setup for Gmail, Outlook, Yahoo
 - **Test Mode**: Verify configuration without sending emails
 - **Security**: Local storage for credentials (client-side only)
+
+### 🌙 Theme Support
+- **Dark Mode**: Full dark mode support with proper contrast
+- **Light Mode**: Clean, modern light theme
+- **Smooth Transitions**: Seamless theme switching with animations
+- **Accessibility**: High contrast colors for better readability
+
+### 🌍 Internationalization
+- **Multi-language Support**: Vietnamese and English
+- **Dynamic Language Switching**: Change language on the fly
+- **Consistent Translations**: All UI elements properly translated
 
 ## 🚀 Quick Start
 
@@ -143,6 +155,9 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 - **Email**: Nodemailer
 - **Editor**: Monaco Editor
 - **Storage**: LocalStorage (client-side)
+- **State Management**: React Context API
+- **Internationalization**: Custom i18n implementation
+- **Theme**: Custom dark/light mode implementation
 
 ### Project Structure
 ```
@@ -156,6 +171,12 @@ src/
 │   │   ├── EmailSender.tsx
 │   │   ├── EmailConfig.tsx
 │   │   └── Providers.tsx
+│   ├── contexts/
+│   │   └── AppContext.tsx  # Global app state (theme, language)
+│   ├── hooks/
+│   │   └── useTranslation.ts # Translation hook
+│   ├── translations/
+│   │   └── index.ts        # Translation files (vi/en)
 │   ├── layout.tsx
 │   └── page.tsx
 ```
@@ -206,6 +227,14 @@ The platform uses Tailwind CSS for styling. Key design elements:
 - **Glassmorphism**: Backdrop blur effects for modern look
 - **Responsive Design**: Mobile-first approach
 - **Color Coding**: Different colors for different functions
+- **Theme-aware Colors**: Automatic color adjustments for dark/light modes
+- **Smooth Transitions**: CSS transitions for theme and state changes
+
+### UI Improvements
+- **Modern Color Scheme**: Blue and orange gradients for Email Sender sections
+- **Enhanced Contrast**: Improved text readability in dark mode
+- **Visual Hierarchy**: Clear distinction between different sections
+- **Accessibility**: High contrast ratios for better accessibility
 
 ### Template Variables
 Use `{{variableName}}` syntax in your HTML templates:
