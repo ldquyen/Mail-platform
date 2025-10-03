@@ -315,7 +315,6 @@ export default function EmailFormBuilder() {
                   : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200'
               }`}>
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm">🔧</span>
                   <h4 className={`text-sm font-semibold transition-colors duration-300 ${
                     theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
                   }`}>
@@ -333,34 +332,6 @@ export default function EmailFormBuilder() {
                       {`{{${param}}}`}
                     </Chip>
                   ))}
-                </div>
-
-                {/* Parameter Input Fields */}
-                <div className="space-y-2">
-                  <h5 className={`text-xs font-medium transition-colors duration-300 ${
-                    theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
-                  }`}>
-                    {t.emailBuilder.enterParameterValues}:
-                  </h5>
-                  <div className="grid grid-cols-1 gap-2">
-                    {parameters.map(param => (
-                      <Input
-                        key={param}
-                        label={param}
-                        placeholder={`Enter value for ${param}`}
-                        value={parameterValues[param] || ''}
-                        onChange={(e) => updateParameterValue(param, e.target.value)}
-                        variant="bordered"
-                        size="sm"
-                        classNames={{
-                          input: theme === 'dark' ? "text-xs text-white" : "text-xs",
-                          inputWrapper: theme === 'dark'
-                            ? "border-gray-600 hover:border-purple-400 focus-within:border-purple-500 bg-gray-800/50"
-                            : "border-gray-300 hover:border-purple-400 focus-within:border-purple-500"
-                        }}
-                      />
-                    ))}
-                  </div>
                 </div>
               </div>
             )}

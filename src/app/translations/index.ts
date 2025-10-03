@@ -147,7 +147,7 @@ export const translations = {
         step2: '• Tạo App Password trong Yahoo Account Security',
         step3: '• Sử dụng App Password thay vì mật khẩu thường',
       },
-      securityNote: 'Lưu ý: Để bảo mật, cấu hình email chỉ được lưu trong trình duyệt hiện tại và không được gửi lên server.',
+      securityNote: 'Để bảo mật, cấu hình email chỉ được lưu trong trình duyệt hiện tại và không được gửi lên server.',
       
       // Placeholders
       smtpHostPlaceholder: 'smtp.gmail.com',
@@ -307,7 +307,7 @@ export const translations = {
         step2: '• Create App Password in Yahoo Account Security',
         step3: '• Use App Password instead of regular password',
       },
-      securityNote: 'Note: For security, email configuration is only stored in current browser and not sent to server.',
+      securityNote: 'For security, email configuration is only stored in current browser and not sent to server.',
       
       // Placeholders
       smtpHostPlaceholder: 'smtp.gmail.com',
